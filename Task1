@@ -1,0 +1,62 @@
+/* PasswordStrengt check */
+
+
+import re
+import zxcvbn
+
+class PasswordStrengthAssessor:
+    def __init__(self):
+        self.zxcvbn_matcher = zxcvbn.PasswordStrength()
+
+    def assess_password_strength(self, password):
+        # Length analysis
+        length_score = self.analyze_length(password)
+
+        # Complexity analysis
+        complexity_score = self.analyze_complexity(password)
+
+        # Uniqueness analysis (using zxcvbn library)
+        uniqueness_score = self.analyze_uniqueness(password)
+
+        # Calculate overall score
+        overall_score = (length_score + complexity_score + uniqueness_score) / 3
+
+        # Provide feedback based on overall score
+        if overall_score < 2:
+            return "Weak", "Your password is weak. Try using a longer password with a mix of characters, numbers, and symbols."
+        elif overall_score < 4:
+            return "Medium", "Your password is medium strength. Consider adding more complexity and uniqueness to make it stronger."
+        else:
+            return "Strong", "Your password is strong! You're doing a great job of keeping your account secure."
+
+    def analyze_length(self, password):
+        if len(password) < 8:
+            return 1
+        elif len(password) < 12:
+            return 2
+        else:
+            return 3
+
+    def analyze_complexity(self, password):
+        if re.search(r"[a-z]", password) and re.search(r"[A-Z]", password) and re.search(r"\d", password) and re.search(r"\W", password):
+            return 3
+        elif re.search(r"[a-z]", password) and re.search(r"[A-Z]", password) and re.search(r"\d", password):
+            return 2
+        else:
+            return 1
+
+    def analyze_uniqueness(self, password):
+        result = self.zxcvbn_matcher.test(password)
+        if result["score"] < 2:
+            return 1
+        elif result["score"] < 4:
+            return 2
+        else:
+            return 3
+
+# Example usage
+assessor = PasswordStrengthAssessor()
+password = input("Enter a password: ")
+strength, feedback = assessor.assess_password_strength(password)
+print(f"Password strength: {strength}")
+print(feedback)
